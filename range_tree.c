@@ -201,7 +201,7 @@ int in_range(range_tree *t, int xs, int xe) {
     return t->val >= xs && t->val <= xe;
 }
 
-// TODO  does this do unnecessary work?
+// Prunes based on current dimension ranges, but only reports points matching all dimensions
 void report_subtree(range_tree *t, int xs[], int xe[], int dim) {
     assert(dim == (DIM - 1));
     if (t == NULL) {
@@ -235,6 +235,7 @@ void report_subtree(range_tree *t, int xs[], int xe[], int dim) {
 
 }
 
+// This prunes based on current dimension ranges
 void range_query(range_tree *t, int xs[], int xe[], int dim) {
     printf("RANGE [%d, %d]\n", xs[dim], xe[dim]);
     range_tree *v_split = find_split_node(t, xs[dim], xe[dim]);
@@ -273,13 +274,11 @@ void range_query(range_tree *t, int xs[], int xe[], int dim) {
 
 void multi_D_range_query(range_tree *t, int xs[], int xe[], int dim) {
     range_tree *v_split = t;
-    while (dim < DIM - 1) {
+    while ((dim < DIM - 1) && (v_split != NULL)) {
+        // TODO - I don't like the way this loop works. Is there a simpler way?
         printf("DIM: %d [%d, %d]\n", dim, xs[dim], xe[dim]);
         v_split = find_split_node(v_split, xs[dim], xe[dim]);
-        if (v_split == NULL) {
-            printf("No nodes found in range...\n");
-            return;
-        } else if (is_leaf(v_split)) {
+        if (is_leaf(v_split)) {
             break;
         }
         v_split = v_split->inner;
@@ -290,18 +289,17 @@ void multi_D_range_query(range_tree *t, int xs[], int xe[], int dim) {
     printf("Outside loop, DIM: %d [%d, %d]\n", dim, xs[dim], xe[dim]);
 
     if (v_split == NULL) {
-        printf("FML is this supposed to happen?\n");
+        printf("No nodes found in range...\n");
         return;
     }
 
     if (is_leaf(v_split)) {
-        for (int i = 0; i < DIM; i++) {
-            if (!point_in_range(t, xs, xe)) {
-                printf("Found leaf, but not in range\n");
-                return;
-            }
+        if (point_in_range(v_split, xs, xe)) {
+            printf("Found (%d, %d, %d)\n", v_split->p->data[0], v_split->p->data[1], v_split->p->data[2]);
+            // print_data(t);
+        } else {
+            printf("Split node is leaf, but not in range\n");
         }
-        print_data(v_split);
         return;
     }
 
