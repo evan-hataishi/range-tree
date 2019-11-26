@@ -5,7 +5,7 @@
 #ifndef RANGE_TREE_H
 #define RANGE_TREE_H
 
-#define DIM 2
+#define DIM 3
 
 //typedef struct rdt_tree {
 //    int num_points;
@@ -58,10 +58,14 @@ int is_leaf(range_tree *tree);
 
 range_tree *find_split_node(range_tree *tree, int xs, int xe);
 
+int point_in_range(range_tree *t, int xs[], int xe[]);
+
 int in_range(range_tree *t, int xs, int xe);
 
-void report_subtree(range_tree *t, int xs, int xe);
+void report_subtree(range_tree *t, int xs[], int xe[], int dim);
 
-void range_query(range_tree *t, int xs, int xe);
+void range_query(range_tree *t, int xs[], int xe[], int dim);
+
+void multi_D_range_query(range_tree *t, int xs[], int xe[], int dim);
 
 #endif
